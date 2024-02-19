@@ -1,0 +1,87 @@
+---
+title: "Rapport sur l'utilisation du package Leaflet dans R"
+author: "Alex DEMEURE"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+# Introduction
+
+Dans le cadre de mon travail personnel, j'ai choisi d'explorer le package Leaflet en raison de sa puissance et de sa polyvalence pour la création de cartes interactives. N'ayant pas encore d'expérience dans la création de cartes, j'ai été intrigué par les fonctionnalités offertes par Leaflet. De plus, j’ai trouvé pertinent de le faire sur ce sujet car lors de la mise en commun des projets, le groupe 2 et notamment Camille m’avait demandé comment j’avais réussi à faire une carte, car elle souhaitait en réaliser une pour son projet. En réalisant ce rapport, celui-ci pourra donc aider les prochains étudiant sur le module OPEN. 
+
+# Fonctionnalités et utilités du package Leaflet
+
+Leaflet est un package R qui permet de créer facilement des cartes interactives, offrant ainsi de nombreuses possibilités d'exploration et de visualisation des données géographiques. Voici quelques-unes de ses fonctionnalités principales :
+
+1. **Création de cartes interactives** : Leaflet permet de générer des cartes interactives en quelques lignes de code, ce qui facilite la représentation graphique des données géographiques.
+2. **Personnalisation avancée** : Il offre de nombreuses options de personnalisation, notamment la possibilité d'ajouter des marqueurs, des polygones, des lignes, des cercles, etc., ainsi que de modifier les tuiles de fond et les pop-ups des éléments de la carte.
+3. **Intégration avec Shiny** : Leaflet peut être intégré facilement avec Shiny, permettant ainsi la création d'applications web interactives où les utilisateurs peuvent explorer les données géographiques de manière dynamique.
+4. **Support de nombreux formats de données** : Leaflet prend en charge divers formats de données géographiques, tels que les data frames, les objets spatiaux des packages sf, terra, et sp, ce qui permet une grande flexibilité dans l'utilisation des données.
+
+# Analyse du code effectué dans le projet
+
+Le code que j’ai effectué est une application Shiny visant à visualiser le nombre de médailles d'or remportées par différents pays aux Jeux Olympiques. Voici une explication détaillée du code :
+- La variable pays est un data frame contenant des informations sur les pays, y compris leur nom, leur latitude, leur longitude et le nombre de médailles d'or remportées.
+- L'interface utilisateur (UI) est définie avec l'utilisation de la fonction fluidPage() de Shiny, où différents onglets sont créés pour afficher différentes visualisations.
+- Dans le serveur (server), la fonction renderLeaflet() est utilisée pour générer la carte Leaflet. La fonction leaflet() initialise la carte, addTiles() (ici, j’ai préféré ne pas en ajouter pour ne pas surcharger la carte) ajoute les tuiles de fond, et addCircleMarkers() ajoute des marqueurs circulaires aux emplacements des pays, avec la taille des marqueurs proportionnelle au nombre de médailles d'or remportées. Les marqueurs sont colorés en rouge avec une bordure bleue, et une pop-up affiche le nom du pays et le nombre de médailles d'or.
+
+# Conclusion
+
+Le package Leaflet en R offre une solution puissante et flexible pour la création de cartes interactives. Grâce à ses fonctionnalités avancées et à son intégration avec Shiny, Leaflet permet de créer des visualisations géographiques dynamiques et personnalisées. En explorant ce package, j'ai pu approfondir mes compétences en visualisation de données géographiques et ce « mini rapport » pourra peut être aider les prochains étudiants à utiliser le package leaflet. 
+
+
+# ANNEXE
+```{r cars}
+library(shiny)
+library(leaflet)
+
+# Données des pays avec leurs coordonnées géographiques
+pays <- data.frame(
+  nom = c("Norvège", "Suède", "Finlande", "Grande Bretagne", "Pays Bas", "France", "Espagne", "Italie", 
+          "Autriche", "Belgique", "Danemark", "Turquie", "Hongrie", "Pologne", "Roumanie", "Canada", 
+          "Etats-Unis", "Australie", "Chine", "Japon", "Japon", "Russie", "Brésil", "Argentine"),
+  latitude = c(60.472024, 60.128161, 61.92411, 51.509865, 52.132633, 46.603354, 40.463667, 41.902782, 47.516231, 
+               50.503887, 56.26392, 38.963745, 47.162494, 51.919438, 45.943161, 56.130366, 37.09024, 
+               -25.274398, 36.204824, 36.204824, 36.204824, 61.52401, -14.235004, -38.416097),
+  longitude = c(8.468946, 18.643501, 25.748151, -0.118092, 5.291266, 1.888334, -3.74922, 12.496366, 14.550072, 
+                4.469936, 9.501785, 35.243322, 19.503304, 19.145136, 24.96676, -106.346771, -106.346771, 
+                133.775136, 104.195397, 138.252924, 138.252924, 138.252924, -51.92528, -63.616672),
+  medaille_or = c(192, 205,144, 296, 130, 262, 49, 257, 83, 44, 48, 41, 182, 79, 90, 144, 1175, 169, 275, 183, 183, 195, 37, 21 )
+)
+
+ui <- fluidPage(
+  titlePanel("Application Shiny pour la visualisation des vainqueurs aux JO"),
+  tabsetPanel(
+    tabPanel("Nombre de médailles d'or gagné ", 
+             leafletOutput("map", width = "100%", height = "600px")
+    ),
+    
+  )
+)
+
+server <- function(input, output, session) {
+  output$map <- renderLeaflet({
+    leaflet() %>%
+      addTiles() %>%
+      setView(lng = 0, lat = 20, zoom = 2) %>%
+      addCircleMarkers(
+        data = pays,
+        lng = ~longitude, lat = ~latitude,
+        radius = sqrt(pays$medaille_or),
+        color = "blue",
+        fillColor = "red",
+        fillOpacity = 0.8,
+        popup = ~paste("<b>", nom, "</b><br>",
+                       "Médailles d'or: ", medaille_or)
+      )
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
